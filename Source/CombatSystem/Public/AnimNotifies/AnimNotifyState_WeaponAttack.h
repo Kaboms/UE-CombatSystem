@@ -3,21 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameplayTagContainer.h"
-#include "Animation/AnimNotifies/AnimNotifyState.h"
-
-#include "AnimNotifyState_Attack.generated.h"
+#include "AnimNotifies/AnimNotifyState_Attack.h"
+#include "AnimNotifyState_WeaponAttack.generated.h"
 
 /**
  * 
  */
-UCLASS(Meta = (DisplayName = "Attack"))
-class COMBATSYSTEM_API UAnimNotifyState_Attack : public UAnimNotifyState
+UCLASS(Meta=(DisplayName="Weapon Attack"))
+class COMBATSYSTEM_API UAnimNotifyState_WeaponAttack : public UAnimNotifyState_Attack
 {
 	GENERATED_BODY()
 
 public:
-	FGameplayTag GetAttackTag() { return AttackTag; }
+	FGameplayTag GetSlotTag() { return SlotTag; }
 
 protected:
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
@@ -25,5 +23,5 @@ protected:
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FGameplayTag AttackTag;
+	FGameplayTag SlotTag;
 };

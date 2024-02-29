@@ -2,6 +2,7 @@
 
 
 #include "Weapons/Weapon.h"
+#include "CombatComponent.h"
 
 #include "Components/CapsuleComponent.h"
 
@@ -16,12 +17,10 @@ void AWeapon::BeginPlay()
 {
     CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 
-    Character = Cast<ACharacter>(GetInstigator());
-
-    for (UBaseAttack* BaseAttack : InstancedAttacks)
+    for (UAttackBase* AttackBase : InstancedAttacks)
     {
-        BaseAttack->Weapon = this;
-        Attacks.Add(BaseAttack->AttackTag, BaseAttack);
+        AttackBase->Init(this, CombatComponent);
+        Attacks.Add(AttackBase->AttackTag, AttackBase);
     }
 
     Super::BeginPlay();
@@ -31,11 +30,6 @@ void AWeapon::BeginPlay()
 void AWeapon::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-
-    if (bAttackStarted && CurrentAttack)
-    {
-        CurrentAttack->Tick(DeltaTime);
-    }
 }
 
 void AWeapon::OnAttackStartedNotify(FGameplayTag AttackTag)
@@ -44,15 +38,9 @@ void AWeapon::OnAttackStartedNotify(FGameplayTag AttackTag)
 
     CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::Type::QueryOnly);
 
-    CurrentAttack = nullptr;
-
-    if (UBaseAttack** FindedAttack = Attacks.Find(AttackTag))
+    if (UAttackBase** FindedAttack = Attacks.Find(AttackTag))
     {
-        CurrentAttack = *FindedAttack;
-    }
-    if (IsValid(CurrentAttack))
-    {
-        CurrentAttack->StartAttack();
+        CombatComponent->StartWeaponAttack(SlotTag, *FindedAttack);
     }
 
     ReceiveOnAttackStartedNotify(AttackTag);
@@ -62,22 +50,11 @@ void AWeapon::OnAttackEndedNotify(FGameplayTag AttackTag)
 {
     bAttackStarted = false;
 
-    if (CurrentAttack == nullptr)
-        return;
-
     CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 
-    if (UBaseAttack** FindedAttack = Attacks.Find(AttackTag))
+    if (UAttackBase** FindedAttack = Attacks.Find(AttackTag))
     {
-        if ((*FindedAttack) == CurrentAttack)
-        {
-            CurrentAttack->EndAttack();
-            CurrentAttack = nullptr;
-        }
-        else
-        {
-            UE_LOG(LogTemp, Error, TEXT("New attack started before previous received AttackEndedNotify"));
-        }
+        CombatComponent->EndWeaponAttack(SlotTag, *FindedAttack);
     }
 
     ReceiveOnAttackEndedNotify(AttackTag);
@@ -85,26 +62,10 @@ void AWeapon::OnAttackEndedNotify(FGameplayTag AttackTag)
 
 void AWeapon::NotifyActorBeginOverlap(AActor* OtherActor)
 {
-    if (!bAttackStarted || GetInstigator() == OtherActor)
-        return;
-
-    if (IsValid(CurrentAttack))
-    {
-        CurrentAttack->BeginOverlap(OtherActor);
-    }
-
     Super::NotifyActorBeginOverlap(OtherActor);
 }
 
 void AWeapon::NotifyActorEndOverlap(AActor* OtherActor)
 {
-    if (GetInstigator() == OtherActor)
-        return;
-
-    if (IsValid(CurrentAttack))
-    {
-        CurrentAttack->EndOverlap(OtherActor);
-    }
-
     Super::NotifyActorEndOverlap(OtherActor);
 }

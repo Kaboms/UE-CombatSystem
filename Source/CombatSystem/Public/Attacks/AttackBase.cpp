@@ -7,6 +7,8 @@ void UAttackBase::Init(AActor* InOwner, UCombatComponent* InCombatComponent)
 
     Owner->OnActorBeginOverlap.AddDynamic(this, &UAttackBase::OnActorBeginOverlap);
     Owner->OnActorEndOverlap.AddDynamic(this, &UAttackBase::OnActorEndOverlap);
+
+	ReceiveInit();
 }
 
 void UAttackBase::OnActorBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)

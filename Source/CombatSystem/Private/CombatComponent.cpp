@@ -130,6 +130,15 @@ void UCombatComponent::OnWeaponAttackEnded(UAnimNotifyState_WeaponAttack* Weapon
     }
 }
 
+void UCombatComponent::StartRandomMoveset()
+{
+    if (!AttackMovesets.IsEmpty())
+    {
+        int32 index = FMath::RandRange(0, AttackMovesets.Num() - 1);
+        StartMoveset(AttackMovesets[index]);
+    }
+}
+
 void UCombatComponent::OnComboSectionStartedNotify(UAnimNotifyState_ComboSection* ComboSectionNS)
 {
     if (!bEnabled)

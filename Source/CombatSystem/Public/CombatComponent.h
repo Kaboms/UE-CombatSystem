@@ -62,7 +62,10 @@ public:
 	void OnWeaponAttackEnded(UAnimNotifyState_WeaponAttack* WeaponAttackNS);
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void StartCombo(UAnimMontage* ComboMontage);
+	void StartMoveset(UAnimMontage* ComboMontage);
+
+	UFUNCTION(BlueprintCallable)
+	void StartRandomMoveset();
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void InterruptAttack();
@@ -108,6 +111,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced)
 	TMap<FGameplayTag, UWeaponSlot*> WeaponSlots;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<UAnimMontage*> AttackMovesets;
 
 	UPROPERTY(EditAnywhere, Instanced)
 	TArray<UAttackBase*> InstancedAttacks;

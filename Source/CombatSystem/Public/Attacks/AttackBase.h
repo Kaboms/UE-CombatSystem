@@ -22,17 +22,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Init(AActor* Owner, UCombatComponent* CombatComponent);
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintCallable)
 	void StartAttack();
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintCallable)
 	void EndAttack();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void BeginOverlap(AActor* OtherActor);
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void EndOverlap(AActor* OtherActor);
 
 	UFUNCTION()
 	void OnActorBeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
@@ -52,6 +46,12 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "OnActorEndOverlap")
 	void ReceiveOnActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor);
 
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "StartAttack")
+	void ReceiveStartAttack();
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "EndAttack")
+	void ReceiveEndAttack();
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGameplayTag AttackTag;
@@ -67,4 +67,7 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<UCombatComponent> CombatComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsActive = false;
 };

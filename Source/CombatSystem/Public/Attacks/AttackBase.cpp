@@ -11,14 +11,32 @@ void UAttackBase::Init(AActor* InOwner, UCombatComponent* InCombatComponent)
 	ReceiveInit();
 }
 
+void UAttackBase::StartAttack()
+{
+	bIsActive = true;
+	ReceiveStartAttack();
+}
+
+void UAttackBase::EndAttack()
+{
+	bIsActive = false;
+	ReceiveEndAttack();
+}
+
 void UAttackBase::OnActorBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
-	ReceiveOnActorBeginOverlap(OverlappedActor, OtherActor);
+	if (bIsActive)
+	{
+		ReceiveOnActorBeginOverlap(OverlappedActor, OtherActor);
+	}
 }
 
 void UAttackBase::OnActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
-	ReceiveOnActorEndOverlap(OverlappedActor, OtherActor);
+	if (bIsActive)
+	{
+		ReceiveOnActorEndOverlap(OverlappedActor, OtherActor);
+	}
 }
 
 UWorld* UAttackBase::GetWorld() const

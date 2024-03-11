@@ -6,7 +6,7 @@
 #include "UObject/NoExportTypes.h"
 #include "GameplayTagContainer.h"
 
-#include "Attack.h"
+#include "Attacks/AttackBase.h"
 #include "AnimNotifies/AnimNotifyState_Attack.h"
 
 #include "Weapon.generated.h"
@@ -81,9 +81,13 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "OnAttackEndedNotify"))
 	void ReceiveOnAttackEndedNotify(FGameplayTag AttackTag);
 
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Meta = (ExposeOnSpawn = "true"))
+	FGameplayTag SlotTag;
+
 protected:
-	UPROPERTY(BlueprintReadOnly)
-	ACharacter* Character;
+	UPROPERTY(BlueprintReadOnly, Meta = (ExposeOnSpawn = "true"))
+	class UCombatComponent* CombatComponent;
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bAttackStarted = false;
@@ -92,14 +96,11 @@ protected:
 	TObjectPtr<class UCapsuleComponent> CapsuleComponent;
 
 	UPROPERTY(EditAnywhere, Instanced)
-	TArray<UBaseAttack*> InstancedAttacks;
+	TArray<UAttackBase*> InstancedAttacks;
 
 	UPROPERTY(BlueprintReadOnly)
-	TMap<FGameplayTag, UBaseAttack*> Attacks;
+	TMap<FGameplayTag, UAttackBase*> Attacks;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TMap<FGameplayTag, UAnimMontage*> ComboMontages;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<UBaseAttack> CurrentAttack;
 };

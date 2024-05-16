@@ -15,6 +15,13 @@ void UAttackBase::StartAttack()
 {
 	bIsActive = true;
 	ReceiveStartAttack();
+
+	TArray<AActor*> OverlappingActors;
+	Owner->GetOverlappingActors(OverlappingActors);
+	for (AActor* Actor : OverlappingActors)
+	{
+		OnActorBeginOverlap(Owner, Actor);
+	}
 }
 
 void UAttackBase::EndAttack()

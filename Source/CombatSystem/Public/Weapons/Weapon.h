@@ -68,7 +68,7 @@ public:
 
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	UFUNCTION(BlueprintCallable)
 	void StartCombo(FGameplayTag ComboTag);
 
 protected:
@@ -80,6 +80,9 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "OnAttackEndedNotify"))
 	void ReceiveOnAttackEndedNotify(FGameplayTag AttackTag);
+
+	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "StartCombo"))
+	void ReceiveStartCombo(FGameplayTag ComboTag);
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Meta = (ExposeOnSpawn = "true"))

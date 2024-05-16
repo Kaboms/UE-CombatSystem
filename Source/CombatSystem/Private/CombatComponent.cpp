@@ -21,10 +21,13 @@ void UCombatComponent::BeginPlay()
 
     Super::BeginPlay();
 
-    for (UAttackBase* AttackBase : InstancedAttacks)
+    for (auto& AttackBase : Attacks)
     {
-        AttackBase->Init(Character, this);
-        Attacks.Add(AttackBase->AttackTag, AttackBase);
+        if (UAttackBase* Attack = AttackBase.Value)
+        {
+            Attack->AttackTag = AttackBase.Key;
+            Attack->Init(Character, this);
+        }
     }
 
     for (auto WeaponSlotPair : WeaponSlots)
@@ -58,6 +61,10 @@ void UCombatComponent::StartWeaponCombo(FGameplayTag SlotTag, FGameplayTag Combo
     if (bIsAttack)
     {
         bMakeNextAttack = true;
+
+        NextAttackTags.AddTag(ComboTag);
+        NextAttackTags.AddTag(SlotTag);
+
     }
     else if (UWeaponSlot** WeaponSlotPtr = WeaponSlots.Find(SlotTag))
     {
@@ -66,8 +73,6 @@ void UCombatComponent::StartWeaponCombo(FGameplayTag SlotTag, FGameplayTag Combo
         if (IsValid(Weapon))
         {
             Weapon->StartCombo(ComboTag);
-
-            bIsAttack = true;
         }
     }
 }
@@ -130,24 +135,49 @@ void UCombatComponent::OnWeaponAttackEnded(UAnimNotifyState_WeaponAttack* Weapon
     }
 }
 
+void UCombatComponent::StartMoveset(UAnimMontage* ComboMontage)
+{
+    if (IsValid(ComboMontage))
+    {
+        if (bIsAttack)
+        {
+            bMakeNextAttack = true;
+        }
+        else
+        {
+            NextAttackTags.Reset();
+
+            bIsAttack = true;
+            ReceiveStartMoveset(ComboMontage);
+        }
+    }
+}
+
+void UCombatComponent::StartMovesetByTag(FGameplayTag MovesetTag)
+{
+    if (UAnimMontage** MovesetPtr = AttackMovesets.Find(MovesetTag))
+    {
+        if (bIsAttack)
+        {
+            NextAttackTags.AddTag(MovesetTag);
+        }
+        StartMoveset(*MovesetPtr);
+    }
+}
+
 void UCombatComponent::StartRandomMoveset()
 {
     if (!AttackMovesets.IsEmpty())
     {
-        int32 index = FMath::RandRange(0, AttackMovesets.Num() - 1);
-        StartMoveset(AttackMovesets[index]);
+        int32 Index = FMath::RandRange(0, AttackMovesets.Num() - 1);
+        TArray<FGameplayTag> Keys;
+        AttackMovesets.GetKeys(Keys);
+
+        StartMoveset(AttackMovesets[Keys[Index]]);
     }
 }
 
-void UCombatComponent::OnComboSectionStartedNotify(UAnimNotifyState_ComboSection* ComboSectionNS)
-{
-    if (!bEnabled)
-        return;
-
-    ReceiveOnComboSectionStartedNotify(ComboSectionNS);
-}
-
-void UCombatComponent::OnComboSectionEndedNotify(UAnimNotifyState_ComboSection* ComboSectionNS)
+void UCombatComponent::OnComboSectionEndedNotify(UAnimNotify_ComboSection* ComboSectionNotify)
 {
     if (!bEnabled)
         return;
@@ -155,12 +185,19 @@ void UCombatComponent::OnComboSectionEndedNotify(UAnimNotifyState_ComboSection* 
     if (bMakeNextAttack)
     {
         UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
-        AnimInstance->Montage_JumpToSection(ComboSectionNS->GetNextAttackSection(), AnimInstance->GetCurrentActiveMontage());
-
-        bMakeNextAttack = false;
+        TMap<FName, FGameplayTagContainer> NextAttackSections = ComboSectionNotify->GetNextAttackSections();
+        for (const auto& SectionCandidate : NextAttackSections)
+        {
+            if (NextAttackTags.HasAllExact(SectionCandidate.Value))
+            {
+                AnimInstance->Montage_JumpToSection(SectionCandidate.Key, AnimInstance->GetCurrentActiveMontage());
+                bMakeNextAttack = false;
+                break;
+            }
+        }
     }
 
-    ReceiveOnComboSectionEndedNotify(ComboSectionNS);
+    ReceiveOnComboSectionEndedNotify(ComboSectionNotify);
 }
 
 AWeapon* UCombatComponent::GetWeaponFromSlot(FGameplayTag WeaponSlot)

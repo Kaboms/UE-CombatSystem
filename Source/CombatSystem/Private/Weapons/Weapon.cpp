@@ -69,3 +69,13 @@ void AWeapon::NotifyActorEndOverlap(AActor* OtherActor)
 {
     Super::NotifyActorEndOverlap(OtherActor);
 }
+
+void AWeapon::StartCombo(FGameplayTag ComboTag)
+{
+    if (UAnimMontage** ComboMontage = ComboMontages.Find(ComboTag))
+    {
+        CombatComponent->StartMoveset(*ComboMontage);
+    }
+
+    ReceiveStartCombo(ComboTag);
+}

@@ -7,7 +7,7 @@
 #include "GameFramework/Character.h"
 
 #include "GameplayTagContainer.h"
-#include "AnimNotifies/AnimNotifyState_ComboSection.h"
+#include "AnimNotifies/AnimNotify_ComboSection.h"
 
 #include "CombatComponent.generated.h"
 
@@ -61,8 +61,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void OnWeaponAttackEnded(UAnimNotifyState_WeaponAttack* WeaponAttackNS);
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	UFUNCTION(BlueprintCallable)
 	void StartMoveset(UAnimMontage* ComboMontage);
+
+	UFUNCTION(BlueprintCallable)
+	void StartMovesetByTag(FGameplayTag MovesetTag);
 
 	UFUNCTION(BlueprintCallable)
 	void StartRandomMoveset();
@@ -71,10 +74,7 @@ public:
 	void InterruptAttack();
 
 	UFUNCTION(BlueprintCallable)
-	void OnComboSectionStartedNotify(UAnimNotifyState_ComboSection* ComboSectionNS);
-
-	UFUNCTION(BlueprintCallable)
-	void OnComboSectionEndedNotify(UAnimNotifyState_ComboSection* ComboSectionNS);
+	void OnComboSectionEndedNotify(UAnimNotify_ComboSection* ComboSectionNotify);
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	AWeapon* SpawnWeapon(TSubclassOf<AWeapon> WeaponClass, FGameplayTag WeaponSlotTag);
@@ -89,11 +89,11 @@ public:
 	bool HasActiveAttack();
 
 protected:
-	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "OnComboSectionStartedNotify"))
-	void ReceiveOnComboSectionStartedNotify(const UAnimNotifyState_ComboSection* ComboSectionNS);
-
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "OnComboSectionEndedNotify"))
-	void ReceiveOnComboSectionEndedNotify(const UAnimNotifyState_ComboSection* ComboSectionNS);
+	void ReceiveOnComboSectionEndedNotify(const UAnimNotify_ComboSection* ComboSectionNotify);
+
+	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "StartMoveset"))
+	void ReceiveStartMoveset(UAnimMontage* ComboMontage);
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
@@ -109,16 +109,16 @@ protected:
 	UPROPERTY(BlueprintReadWrite)
 	bool bMakeNextAttack = false;
 
+	UPROPERTY(BlueprintReadWrite)
+	FGameplayTagContainer NextAttackTags;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced)
 	TMap<FGameplayTag, UWeaponSlot*> WeaponSlots;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<UAnimMontage*> AttackMovesets;
+	TMap<FGameplayTag, UAnimMontage*> AttackMovesets;
 
-	UPROPERTY(EditAnywhere, Instanced)
-	TArray<UAttackBase*> InstancedAttacks;
-
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced)
 	TMap<FGameplayTag, UAttackBase*> Attacks;
 
 	UPROPERTY(BlueprintReadOnly)

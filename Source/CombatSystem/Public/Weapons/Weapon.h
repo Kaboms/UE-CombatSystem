@@ -71,6 +71,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StartCombo(FGameplayTag ComboTag);
 
+	FGameplayTagContainer GetWeaponTags() { return WeaponTags; }
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -106,4 +108,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TMap<FGameplayTag, UAnimMontage*> ComboMontages;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (ExposeOnSpawn = "true"))
+	FGameplayTagContainer WeaponTags;
 };

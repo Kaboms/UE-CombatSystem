@@ -68,6 +68,6 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<UCombatComponent> CombatComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 	bool bIsActive = false;
 };

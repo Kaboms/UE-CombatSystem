@@ -88,6 +88,9 @@ public:
 	UFUNCTION(BlueprintPure)
 	bool HasActiveAttack();
 
+	UFUNCTION(BlueprintCallable)
+	void DetachAllWeapons();
+
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "OnComboSectionEndedNotify"))
 	void ReceiveOnComboSectionEndedNotify(const UAnimNotify_ComboSection* ComboSectionNotify);

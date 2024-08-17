@@ -214,3 +214,14 @@ bool UCombatComponent::HasActiveAttack()
 {
     return !ActiveAttacks.IsEmpty() || !WeaponActiveAttacks.IsEmpty();
 }
+
+void UCombatComponent::DetachAllWeapons()
+{
+    for (auto WeaponSlotPair : WeaponSlots)
+    {
+        for (auto Weapon : WeaponSlotPair.Value->Weapons)
+        {
+            Weapon->Detach();
+        }
+    }
+}

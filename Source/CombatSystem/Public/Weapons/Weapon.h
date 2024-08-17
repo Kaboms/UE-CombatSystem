@@ -73,6 +73,9 @@ public:
 
 	FGameplayTagContainer GetWeaponTags() { return WeaponTags; }
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void Detach();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

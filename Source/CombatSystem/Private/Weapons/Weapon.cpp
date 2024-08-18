@@ -79,3 +79,11 @@ void AWeapon::StartCombo(FGameplayTag ComboTag)
 
     ReceiveStartCombo(ComboTag);
 }
+
+void AWeapon::Detach()
+{
+    if (!bIsDetachable)
+        return;
+
+    ReceiveDetach();
+}

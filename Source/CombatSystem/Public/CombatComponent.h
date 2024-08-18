@@ -102,9 +102,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bIsAttack = false;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	bool bEnabled = true;
-
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, BlueprintGetter = GetCharacter)
 	TObjectPtr<ACharacter> Character;

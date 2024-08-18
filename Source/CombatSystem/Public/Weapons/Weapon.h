@@ -73,10 +73,13 @@ public:
 
 	FGameplayTagContainer GetWeaponTags() { return WeaponTags; }
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	UFUNCTION(BlueprintCallable)
 	void Detach();
 
 protected:
+	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "Detach"))
+	void ReceiveDetach();
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -92,6 +95,9 @@ protected:
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Meta = (ExposeOnSpawn = "true"))
 	FGameplayTag SlotTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (ExposeOnSpawn = "true"))
+	bool bIsDetachable = true;
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Meta = (ExposeOnSpawn = "true"))

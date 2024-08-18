@@ -12,6 +12,8 @@ UCombatComponent::UCombatComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
+
+    bAutoActivate = true;
 }
 
 // Called when the game starts
@@ -55,7 +57,7 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 void UCombatComponent::StartWeaponCombo(FGameplayTag SlotTag, FGameplayTag ComboTag)
 {
-    if (!bEnabled)
+    if (!IsActive())
         return;
 
     if (bIsAttack)
@@ -79,6 +81,9 @@ void UCombatComponent::StartWeaponCombo(FGameplayTag SlotTag, FGameplayTag Combo
 
 void UCombatComponent::StartAttack(UAttackBase* Attack)
 {
+    if (!IsActive())
+        return;
+
     ActiveAttacks.Add(Attack);
     Attack->StartAttack();
 }
@@ -91,6 +96,9 @@ void UCombatComponent::EndAttack(UAttackBase* Attack)
 
 void UCombatComponent::StartWeaponAttack(FGameplayTag WeaponTag, UAttackBase* Attack)
 {
+    if (!IsActive())
+        return;
+
     WeaponActiveAttacks.Add(WeaponTag, Attack);
     StartAttack(Attack);
 }
@@ -137,6 +145,9 @@ void UCombatComponent::OnWeaponAttackEnded(UAnimNotifyState_WeaponAttack* Weapon
 
 void UCombatComponent::StartMoveset(UAnimMontage* ComboMontage)
 {
+    if (!IsActive())
+        return;
+
     if (IsValid(ComboMontage))
     {
         if (bIsAttack)
@@ -155,6 +166,9 @@ void UCombatComponent::StartMoveset(UAnimMontage* ComboMontage)
 
 void UCombatComponent::StartMovesetByTag(FGameplayTag MovesetTag)
 {
+    if (!IsActive())
+        return;
+
     if (UAnimMontage** MovesetPtr = AttackMovesets.Find(MovesetTag))
     {
         if (bIsAttack)
@@ -167,6 +181,9 @@ void UCombatComponent::StartMovesetByTag(FGameplayTag MovesetTag)
 
 void UCombatComponent::StartRandomMoveset()
 {
+    if (!IsActive())
+        return;
+
     if (!AttackMovesets.IsEmpty())
     {
         int32 Index = FMath::RandRange(0, AttackMovesets.Num() - 1);
@@ -179,7 +196,7 @@ void UCombatComponent::StartRandomMoveset()
 
 void UCombatComponent::OnComboSectionEndedNotify(UAnimNotify_ComboSection* ComboSectionNotify)
 {
-    if (!bEnabled)
+    if (!IsActive())
         return;
 
     if (bMakeNextAttack)

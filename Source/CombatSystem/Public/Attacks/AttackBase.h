@@ -5,6 +5,10 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "GameplayTagContainer.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
+
+#include "AttackImpactSound.h"
+#include "AttackInstigatorInterface.h"
 
 #include "AttackBase.generated.h"
 
@@ -28,23 +32,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EndAttack();
 
-	UFUNCTION()
-	void OnActorBeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
-
-	UFUNCTION()
-	void OnActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor);
-
 	virtual class UWorld* GetWorld() const override;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "Init")
 	void ReceiveInit();
-
-	UFUNCTION(BlueprintImplementableEvent, DisplayName = "OnActorBeginOverlap")
-	void ReceiveOnActorBeginOverlap(AActor* OverlappedActor, AActor* OtherActor);
-
-	UFUNCTION(BlueprintImplementableEvent, DisplayName = "OnActorEndOverlap")
-	void ReceiveOnActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor);
 
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "StartAttack")
 	void ReceiveStartAttack();
@@ -52,10 +50,16 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "EndAttack")
 	void ReceiveEndAttack();
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void ApplyAttackToTarget(AActor* Target, FHitResult HitResult);
+
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FGameplayTag AttackTag;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FGameplayTag AttackType;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Damage;
 
@@ -64,6 +68,8 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<AActor> Owner;
+
+	IAttackInstigatorInterface* AttackInstigator;
 
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<UCombatComponent> CombatComponent;

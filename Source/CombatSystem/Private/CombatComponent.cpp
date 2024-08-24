@@ -32,11 +32,11 @@ void UCombatComponent::BeginPlay()
         }
     }
 
-    for (auto WeaponSlotPair : WeaponSlots)
+    for (const auto& WeaponSlotPair : WeaponSlots)
     {
-        if (!WeaponSlotPair.Value->DefaultWeapons.IsEmpty())
+        if (IsValid(WeaponSlotPair.Value.DefaultWeapon))
         {
-            SpawnWeapon(WeaponSlotPair.Value->DefaultWeapons[0], WeaponSlotPair.Key);
+            SpawnWeapon(WeaponSlotPair.Value.DefaultWeapon, WeaponSlotPair.Key);
         }
     }
 }
@@ -68,10 +68,9 @@ void UCombatComponent::StartWeaponCombo(FGameplayTag SlotTag, FGameplayTag Combo
         NextAttackTags.AddTag(SlotTag);
 
     }
-    else if (UWeaponSlot** WeaponSlotPtr = WeaponSlots.Find(SlotTag))
+    else if (FWeaponSlot* WeaponSlotPtr = WeaponSlots.Find(SlotTag))
     {
-        UWeaponSlot* WeaponSlot = *WeaponSlotPtr;
-        AWeapon* Weapon = WeaponSlot->GetCurrentWeapon();
+        AWeapon* Weapon = WeaponSlotPtr->Weapon;
         if (IsValid(Weapon))
         {
             Weapon->StartCombo(ComboTag);
@@ -94,18 +93,18 @@ void UCombatComponent::EndAttack(UAttackBase* Attack)
     Attack->EndAttack();
 }
 
-void UCombatComponent::StartWeaponAttack(FGameplayTag WeaponTag, UAttackBase* Attack)
+void UCombatComponent::StartWeaponAttack(FGameplayTag WeaponSlotTag, UAttackBase* Attack)
 {
     if (!IsActive())
         return;
 
-    WeaponActiveAttacks.Add(WeaponTag, Attack);
+    WeaponActiveAttacks.Add(WeaponSlotTag, Attack);
     StartAttack(Attack);
 }
 
-void UCombatComponent::EndWeaponAttack(FGameplayTag WeaponTag, UAttackBase* Attack)
+void UCombatComponent::EndWeaponAttack(FGameplayTag WeaponSlotTag, UAttackBase* Attack)
 {
-    WeaponActiveAttacks.Remove(WeaponTag);
+    WeaponActiveAttacks.Remove(WeaponSlotTag);
     EndAttack(Attack);
 }
 
@@ -194,6 +193,21 @@ void UCombatComponent::StartRandomMoveset()
     }
 }
 
+void UCombatComponent::InterruptAttack_Implementation()
+{
+    TMap<FGameplayTag, UAttackBase*> WeaponActiveAttacksCached = WeaponActiveAttacks;
+    for (const auto& ActiveWeaponAttack : WeaponActiveAttacksCached)
+    {
+        EndWeaponAttack(ActiveWeaponAttack.Key, ActiveWeaponAttack.Value);
+    }
+
+    TSet<UAttackBase*> ActiveAttacksCache = ActiveAttacks;
+    for (const auto& ActiveAttack : ActiveAttacksCache)
+    {
+        EndAttack(ActiveAttack);
+    }
+}
+
 void UCombatComponent::OnComboSectionEndedNotify(UAnimNotify_ComboSection* ComboSectionNotify)
 {
     if (!IsActive())
@@ -217,12 +231,11 @@ void UCombatComponent::OnComboSectionEndedNotify(UAnimNotify_ComboSection* Combo
     ReceiveOnComboSectionEndedNotify(ComboSectionNotify);
 }
 
-AWeapon* UCombatComponent::GetWeaponFromSlot(FGameplayTag WeaponSlot)
+AWeapon* UCombatComponent::GetWeaponFromSlot(FGameplayTag WeaponSlotTag)
 {
-    if (UWeaponSlot** WeaponSlotPtr = WeaponSlots.Find(WeaponSlot))
+    if (FWeaponSlot* WeaponSlotPtr = WeaponSlots.Find(WeaponSlotTag))
     {
-        AWeapon* Weapon = (*WeaponSlotPtr)->GetCurrentWeapon();
-        return Weapon;
+        return WeaponSlotPtr->Weapon;
     }
     return nullptr;
 }
@@ -236,7 +249,7 @@ void UCombatComponent::DetachAllWeapons()
 {
     for (auto WeaponSlotPair : WeaponSlots)
     {
-        for (auto Weapon : WeaponSlotPair.Value->Weapons)
+        if (AWeapon* Weapon = WeaponSlotPair.Value.Weapon)
         {
             Weapon->Detach();
         }

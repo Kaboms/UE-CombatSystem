@@ -8,47 +8,17 @@
 
 #include "Attacks/AttackBase.h"
 #include "AnimNotifies/AnimNotifyState_Attack.h"
+#include "Attacks/AttackInstigatorInterface.h"
 
 #include "Weapon.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAttackEnded);
 
-UCLASS(BlueprintType, EditInlineNew)
-class UWeaponSlot : public UObject
-{
-	GENERATED_BODY()
-
-public:
-	UFUNCTION(BlueprintPure)
-	AWeapon* GetCurrentWeapon()
-	{
-		if (Weapons.IsValidIndex(CurrentWeaponIndex))
-		{
-			return Weapons[CurrentWeaponIndex];
-		}
-
-		return nullptr;
-	}
-
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FName MeshSlotName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<TSubclassOf<AWeapon>> DefaultWeapons;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TArray<AWeapon*> Weapons;
-
-	UPROPERTY(BlueprintReadOnly)
-	int32 CurrentWeaponIndex = 0;
-};
-
 /**
  * 
  */
 UCLASS(Blueprintable, BlueprintType)
-class COMBATSYSTEM_API AWeapon : public AActor
+class COMBATSYSTEM_API AWeapon : public AActor, public IAttackInstigatorInterface
 {
 	GENERATED_BODY()
 
@@ -64,9 +34,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void OnAttackEndedNotify(FGameplayTag AttackTag);
 
-	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+	UFUNCTION(BlueprintNativeEvent)
+	void BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
+	UFUNCTION(BlueprintNativeEvent)
+	void EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UFUNCTION(BlueprintCallable)
 	void StartCombo(FGameplayTag ComboTag);
@@ -75,6 +47,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Detach();
+
+	virtual void OnAttackHit_Implementation(UAttackBase* Attack, AActor* Target, FHitResult HitResult) override;
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "Detach"))
@@ -91,6 +65,10 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "StartCombo"))
 	void ReceiveStartCombo(FGameplayTag ComboTag);
+
+	// Play random impact sound from ImpactSounds by this HitResult
+	UFUNCTION(BlueprintCallable)
+	void PlayAttackImpactSound(UAttackBase* Attack, FHitResult HitResult);
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Meta = (ExposeOnSpawn = "true"))
@@ -120,4 +98,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (ExposeOnSpawn = "true"))
 	FGameplayTagContainer WeaponTags;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TMap<TEnumAsByte<EPhysicalSurface>, FImpactSoundTypes> ImpactSounds;
 };

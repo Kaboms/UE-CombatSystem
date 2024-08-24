@@ -8,11 +8,11 @@
 
 #include "GameplayTagContainer.h"
 #include "AnimNotifies/AnimNotify_ComboSection.h"
+#include "Weapons/WeaponSlot.h"
 
 #include "CombatComponent.generated.h"
 
 class AWeapon;
-class UWeaponSlot;
 class ACharacterBase;
 class UAnimNotifyState_Attack;
 class UAnimNotifyState_WeaponAttack;
@@ -44,10 +44,10 @@ public:
 	void EndAttack(UAttackBase* Attack);
 
 	UFUNCTION(BlueprintCallable)
-	void StartWeaponAttack(FGameplayTag WeaponTag, UAttackBase* Attack);
+	void StartWeaponAttack(FGameplayTag WeaponSlotTag, UAttackBase* Attack);
 
 	UFUNCTION(BlueprintCallable)
-	void EndWeaponAttack(FGameplayTag WeaponTag, UAttackBase* Attack);
+	void EndWeaponAttack(FGameplayTag WeaponSlotTag, UAttackBase* Attack);
 
 	UFUNCTION(BlueprintCallable)
 	void OnAttackStarted(UAnimNotifyState_Attack* AttackNS);
@@ -70,7 +70,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StartRandomMoveset();
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void InterruptAttack();
 
 	UFUNCTION(BlueprintCallable)
@@ -83,7 +83,7 @@ public:
 	ACharacter* GetCharacter() { return Character; }
 
 	UFUNCTION(BlueprintPure)
-	AWeapon* GetWeaponFromSlot(FGameplayTag WeaponSlot);
+	AWeapon* GetWeaponFromSlot(FGameplayTag WeaponSlotTag);
 
 	UFUNCTION(BlueprintPure)
 	bool HasActiveAttack();
@@ -102,6 +102,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bIsAttack = false;
 
+	UPROPERTY(BlueprintReadOnly)
+	TSet<UAttackBase*> ActiveAttacks;
+
+	UPROPERTY(BlueprintReadOnly)
+	TMap<FGameplayTag, UAttackBase*> WeaponActiveAttacks;
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, BlueprintGetter = GetCharacter)
 	TObjectPtr<ACharacter> Character;
@@ -112,18 +118,12 @@ protected:
 	UPROPERTY(BlueprintReadWrite)
 	FGameplayTagContainer NextAttackTags;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced)
-	TMap<FGameplayTag, UWeaponSlot*> WeaponSlots;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TMap<FGameplayTag, FWeaponSlot> WeaponSlots;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TMap<FGameplayTag, UAnimMontage*> AttackMovesets;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced)
 	TMap<FGameplayTag, UAttackBase*> Attacks;
-
-	UPROPERTY(BlueprintReadOnly)
-	TSet<UAttackBase*> ActiveAttacks;
-
-	UPROPERTY(BlueprintReadOnly)
-	TMap<FGameplayTag, UAttackBase*> WeaponActiveAttacks;
 };

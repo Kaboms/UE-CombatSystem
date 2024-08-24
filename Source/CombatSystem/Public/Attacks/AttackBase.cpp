@@ -3,10 +3,9 @@
 void UAttackBase::Init(AActor* InOwner, UCombatComponent* InCombatComponent)
 {
     Owner = InOwner;
-    CombatComponent = InCombatComponent;
+	AttackInstigator = Cast<IAttackInstigatorInterface>(Owner);
 
-    Owner->OnActorBeginOverlap.AddDynamic(this, &UAttackBase::OnActorBeginOverlap);
-    Owner->OnActorEndOverlap.AddDynamic(this, &UAttackBase::OnActorEndOverlap);
+    CombatComponent = InCombatComponent;
 
 	ReceiveInit();
 }
@@ -15,35 +14,12 @@ void UAttackBase::StartAttack()
 {
 	bIsActive = true;
 	ReceiveStartAttack();
-
-	TArray<AActor*> OverlappingActors;
-	Owner->GetOverlappingActors(OverlappingActors);
-	for (AActor* Actor : OverlappingActors)
-	{
-		OnActorBeginOverlap(Owner, Actor);
-	}
 }
 
 void UAttackBase::EndAttack()
 {
 	bIsActive = false;
 	ReceiveEndAttack();
-}
-
-void UAttackBase::OnActorBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
-{
-	if (bIsActive)
-	{
-		ReceiveOnActorBeginOverlap(OverlappedActor, OtherActor);
-	}
-}
-
-void UAttackBase::OnActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor)
-{
-	if (bIsActive)
-	{
-		ReceiveOnActorEndOverlap(OverlappedActor, OtherActor);
-	}
 }
 
 UWorld* UAttackBase::GetWorld() const
@@ -62,4 +38,20 @@ UWorld* UAttackBase::GetWorld() const
 
 	// In all other cases...
 	return GetOuter()->GetWorld();
+}
+
+void UAttackBase::BeginOverlap_Implementation(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+}
+
+void UAttackBase::EndOverlap_Implementation(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+}
+
+void UAttackBase::ApplyAttackToTarget_Implementation(AActor* Target, FHitResult HitResult)
+{
+	if (AttackInstigator)
+	{
+		IAttackInstigatorInterface::Execute_OnAttackHit(AttackInstigator->_getUObject(), this, Target, HitResult);
+	}
 }

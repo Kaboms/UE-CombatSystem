@@ -32,13 +32,7 @@ void UCombatComponent::BeginPlay()
         }
     }
 
-    for (const auto& WeaponSlotPair : WeaponSlots)
-    {
-        if (IsValid(WeaponSlotPair.Value.DefaultWeapon))
-        {
-            SpawnWeapon(WeaponSlotPair.Value.DefaultWeapon, WeaponSlotPair.Key);
-        }
-    }
+    SpawnDefaultWeapons();
 }
 
 // Called every frame
@@ -229,6 +223,39 @@ void UCombatComponent::OnComboSectionEndedNotify(UAnimNotify_ComboSection* Combo
     }
 
     ReceiveOnComboSectionEndedNotify(ComboSectionNotify);
+}
+
+void UCombatComponent::SpawnDefaultWeapons()
+{
+    for (const auto& WeaponSlotPair : WeaponSlots)
+    {
+        if (IsValid(WeaponSlotPair.Value.DefaultWeapon))
+        {
+            SpawnWeapon(WeaponSlotPair.Value.DefaultWeapon, WeaponSlotPair.Key);
+        }
+    }
+}
+
+AWeapon* UCombatComponent::ChangeWeaponAtSlot(TSubclassOf<AWeapon> NewWeaponClass, FGameplayTag WeaponSlotTag, bool bDetachOldWeapon)
+{
+    if (FWeaponSlot* WeaponSlotPtr = WeaponSlots.Find(WeaponSlotTag))
+    {
+        if (IsValid(WeaponSlotPtr->Weapon))
+        {
+            if (bDetachOldWeapon)
+            {
+                WeaponSlotPtr->Weapon->Detach();
+            }
+            else
+            {
+                WeaponSlotPtr->Weapon->Destroy();
+            }
+
+            return SpawnWeapon(NewWeaponClass, WeaponSlotTag);
+        }
+    }
+
+    return nullptr;
 }
 
 AWeapon* UCombatComponent::GetWeaponFromSlot(FGameplayTag WeaponSlotTag)

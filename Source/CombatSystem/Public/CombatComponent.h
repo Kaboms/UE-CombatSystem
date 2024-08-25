@@ -79,6 +79,13 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	AWeapon* SpawnWeapon(TSubclassOf<AWeapon> WeaponClass, FGameplayTag WeaponSlotTag);
 
+	UFUNCTION(BlueprintCallable)
+	void SpawnDefaultWeapons();
+
+	// Remove weapon from slot if exist and spawn new weapon. By default old weapon will be destroyed - to detach weapon use bDetachOldWeapon
+	UFUNCTION(BlueprintCallable)
+	AWeapon* ChangeWeaponAtSlot(TSubclassOf<AWeapon> NewWeaponClass, FGameplayTag WeaponSlotTag, bool bDetachOldWeapon = false);
+
 	UFUNCTION(BlueprintGetter)
 	ACharacter* GetCharacter() { return Character; }
 

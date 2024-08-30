@@ -11,7 +11,7 @@ struct FAttackImpactSound
 
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    USoundWave* SoundWave;
+    USoundWave* SoundWave = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool PlayAtLocation = true;

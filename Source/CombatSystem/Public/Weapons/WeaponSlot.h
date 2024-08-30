@@ -21,5 +21,5 @@ public:
 	TSubclassOf<AWeapon> DefaultWeapon;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	AWeapon* Weapon;
+	AWeapon* Weapon = nullptr;
 };

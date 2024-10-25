@@ -9,16 +9,22 @@
 
 AWeapon::AWeapon() : Super()
 {
+    PrimaryActorTick.bStartWithTickEnabled = false;
+
     CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>("CapsuleComponent");
     RootComponent = CapsuleComponent;
 
     CapsuleComponent->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::BeginOverlap);
     CapsuleComponent->OnComponentEndOverlap.AddDynamic(this, &AWeapon::EndOverlap);
+
+    CombatComponent = NULL;
 }
 
 // Called when the game starts or when spawned
 void AWeapon::BeginPlay()
 {
+    Super::BeginPlay();
+
     CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::Type::NoCollision);
 
     for (UAttackBase* AttackBase : InstancedAttacks)
@@ -27,7 +33,10 @@ void AWeapon::BeginPlay()
         Attacks.Add(AttackBase->AttackTag, AttackBase);
     }
 
-    Super::BeginPlay();
+    if (IsValid(CombatComponent))
+    {
+        CombatComponent->GetCharacter()->OnDestroyed.AddDynamic(this, &AWeapon::OnCharacterDestroyes);
+    }
 }
 
 void AWeapon::PlayAttackImpactSound(UAttackBase* Attack, FHitResult HitResult)
@@ -58,6 +67,11 @@ void AWeapon::PlayAttackImpactSound(UAttackBase* Attack, FHitResult HitResult)
             }
         }
     }
+}
+
+void AWeapon::OnCharacterDestroyes(AActor* DestroyedActor)
+{
+    Destroy();
 }
 
 // Called every frame
@@ -126,12 +140,23 @@ void AWeapon::StartCombo(FGameplayTag ComboTag)
     ReceiveStartCombo(ComboTag);
 }
 
-void AWeapon::Detach()
+void AWeapon::Detach_Implementation()
 {
     if (!bIsDetachable)
         return;
 
-    ReceiveDetach();
+    FDetachmentTransformRules DetachmentTransformRules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, true);
+    DetachFromActor(DetachmentTransformRules);
+
+    CapsuleComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+    CapsuleComponent->SetCollisionObjectType(ECC_PhysicsBody);
+    CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::Type::PhysicsOnly);
+
+    FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([this](float DeltaTime)
+        {
+            CapsuleComponent->SetSimulatePhysics(true);
+            return false;
+        }));
 }
 
 void AWeapon::OnAttackHit_Implementation(UAttackBase* Attack, AActor* Target, FHitResult HitResult)

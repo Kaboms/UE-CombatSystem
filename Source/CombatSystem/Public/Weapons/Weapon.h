@@ -45,17 +45,16 @@ public:
 
 	FGameplayTagContainer GetWeaponTags() { return WeaponTags; }
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void Detach();
 
 	virtual void OnAttackHit_Implementation(UAttackBase* Attack, AActor* Target, FHitResult HitResult) override;
 
 protected:
-	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "Detach"))
-	void ReceiveDetach();
-
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	virtual void Detach_Implementation();
 
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "OnAttackStartedNotify"))
 	void ReceiveOnAttackStartedNotify(FGameplayTag AttackTag);
@@ -69,6 +68,9 @@ protected:
 	// Play random impact sound from ImpactSounds by this HitResult
 	UFUNCTION(BlueprintCallable)
 	void PlayAttackImpactSound(UAttackBase* Attack, FHitResult HitResult);
+
+	UFUNCTION()
+	void OnCharacterDestroyes(AActor* DestroyedActor);
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Meta = (ExposeOnSpawn = "true"))

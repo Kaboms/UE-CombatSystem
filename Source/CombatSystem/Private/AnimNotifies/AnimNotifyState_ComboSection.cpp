@@ -4,7 +4,7 @@
 #include "AnimNotifies/AnimNotify_ComboSection.h"
 #include "CombatComponent.h"
 
-void UAnimNotify_ComboSection::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+void UAnimNotify_ComboSection::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
     UCombatComponent* CombatComponent = Cast<UCombatComponent>(MeshComp->GetOwner()->GetComponentByClass(UCombatComponent::StaticClass()));
     if (IsValid(CombatComponent))

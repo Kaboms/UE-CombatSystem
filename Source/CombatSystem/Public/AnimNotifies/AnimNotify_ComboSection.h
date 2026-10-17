@@ -21,7 +21,7 @@ public:
 	TMap<FName, FGameplayTagContainer> GetNextAttackSections() { return NextAttackSections; }
 
 protected:
-	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
+	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
